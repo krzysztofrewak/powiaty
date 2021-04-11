@@ -318,8 +318,9 @@
             return 'background: ' + level.color
           },
           resetMap () {
-            this.levels = {}
             this.regions = []
+            this.levels = {}
+            localStorage.removeItem('cached')
 
             this.buildLevels({})
             this.buildRegions({})
