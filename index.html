@@ -1,0 +1,355 @@
+<html lang="pl">
+    <head>
+        <meta charset="utf-8">
+        <title>Odwiedzone powiaty</title>
+        <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+        <style>
+            #screenshot-placeholder canvas {
+                width: 240px !important;
+                height: 240px !important;
+                margin: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="h-screen flex overflow-hidden bg-white" id="application">
+            <div class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" v-if="screenshot">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="screenshot = false"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6">
+                        <div>
+                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                                <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-5">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                    Skopiuj poniższy obrazek kilkając w niego prawym przyciskiem myszy i wybierając opcję "Kopiuj obraz".
+                                </h3>
+                                <div class="mt-2" id="screenshot-placeholder">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 sm:mt-6">
+                            <button type="button" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700" @click="screenshot = false">
+                                Wróć na stronę główną
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col min-w-0 flex-1 overflow-hidden">
+                <div class="flex-1 relative z-0 flex overflow-hidden">
+                    <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none xl:order-last" tabindex="0">
+                        <div class="bg-gray-100 p-8" v-if="options">
+                            <div class="space-y-6">
+                                <div class="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                                    <div class="md:grid md:grid-cols-3 md:gap-6">
+                                        <div class="md:col-span-1">
+                                            <h3 class="text-lg font-medium leading-6 text-gray-900">Kategorie</h3>
+                                            <p class="mt-1 text-sm text-gray-500">
+                                                Domyślny tryb wyświetlania mapy to "odwiedzone powiaty", ale możesz dowolnie zmienić liczbę kategorii, ich etykiety i kolory.
+                                            </p>
+                                        </div>
+                                        <div class="mt-5 md:mt-0 md:col-span-2">
+                                            <div class="grid grid-cols-6 gap-6 mb-3" v-for="level in computedLevels">
+                                                <div class="col-span-6 sm:col-span-6 lg:col-span-2">
+                                                    <label for="city" class="block text-xs text-gray-700">ID</label>
+                                                    <input type="text" name="city" id="city" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 outline-none sm:text-sm" :value="level.level" disabled>
+                                                </div>
+
+                                                <div class="col-span-6 sm:col-span-3 lg:col-span-2">
+                                                    <label for="state" class="block text-xs text-gray-700">etykieta</label>
+                                                    <input type="text" name="state" id="state" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 outline-none sm:text-sm" v-model="level.label">
+                                                </div>
+
+                                                <div class="col-span-6 sm:col-span-3 lg:col-span-2">
+                                                    <label for="postal_code" class="block text-xs text-gray-700">kolor HEX</label>
+                                                    <input type="text" name="postal_code" id="postal_code" autocomplete="postal-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 outline-none sm:text-sm" v-model="level.color">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+                                    <div class="md:grid md:grid-cols-3 md:gap-6">
+                                        <div class="md:col-span-1">
+                                            <h3 class="text-lg font-medium leading-6 text-gray-900">Informacje techniczne</h3>
+                                            <p class="mt-1 text-sm text-gray-500">
+                                                Część z tych informacji może się przydać z programistycznego punktu widzenia.
+                                            </p>
+                                        </div>
+                                        <div class="mt-5 md:mt-0 md:col-span-2">
+                                            <div>
+                                                <label for="cached" class="block text-sm font-medium text-gray-700">
+                                                    Zserializowana mapa
+                                                </label>
+                                                <div class="mt-1">
+                                                    <textarea id="cached" name="about" rows="12" class="flex-1 block w-full rounded p-2 sm:text-xs border border-gray-300 outline-none" placeholder="Zserializowana mapa" disabled>{{ cached }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="map" class="relative w-full p-12">
+                            <svg class="mx-auto"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 1500 1428.8"
+                                    id="svg766">
+                                <path v-for="region in regions" @click="toggleLevel(region)"
+                                        stroke="#fff"
+                                        stroke-width="2"
+                                        :d="region.d"
+                                        :style="getStyle(region)">
+                                    <title>{{ region.name }}</title>
+                                </path>
+                            </svg>
+                            <div class="absolute bottom-0 mb-4 ml-4 text-xs border p-4 rounded">
+                                <div class="p-1" v-for="level in computedLevels">
+                                    <div :style="getColor(level)" class="inline-block flex-shrink-0 w-2.5 h-2.5 mr-1 rounded-full"></div>
+                                    {{ level.label }}
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                    <aside class="hidden xl:order-first xl:flex xl:flex-col flex-shrink-0 w-96 border-r border-gray-200">
+                        <div class="px-6 pt-6 pb-4">
+                            <h2 class="text-lg font-medium text-gray-900">Mapa polskich powiatów</h2>
+                            <p class="text-sm text-gray-600">
+                                Wyklikaj na niej co zechcesz
+                            </p>
+
+                            <div class="mt-6 flex space-x-4">
+                                <div class="flex-1 min-w-0">
+                                    <label for="search" class="sr-only">Szukaj</label>
+                                    <div class="relative rounded-md shadow-sm">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <input type="search" name="search" id="search" class="block w-full py-2 pl-10 sm:text-xs border rounded-md outline-none" placeholder="Szukaj po nazwie powiatu lub województwa" v-model="search">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 flex space-x-4">
+                                <button type="button" class="flex-1 inline-flex items-center justify-center px-3 py-1 border shadow-sm text-xs rounded-md focus:outline-none" @click="takeScreenshot()" title="Screenshot">
+                                    <svg class="-ml-1 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="flex-1 inline-flex items-center justify-center px-3 py-1 border shadow-sm text-xs rounded-md focus:outline-none" @click="resetMap()" title="Resetuj mapę">
+                                    <svg class="-ml-1 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" class="flex-1 inline-flex items-center justify-center px-3 py-1 border shadow-sm text-xs rounded-md focus:outline-none" @click="showOptions()" title="Zaawansowane">
+                                    <svg class="-ml-1 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <nav class="flex-1 mt-4 min-h-0 overflow-y-auto" v-if="!search">
+                            <div class="relative" v-for="level in computedLevels">
+                                <div class="z-10 sticky top-0 border-t border-b border-gray-200 bg-gray-50 px-6 py-1 text-sm">
+                                    <div :style="getColor(level)" class="inline-block flex-shrink-0 w-2.5 h-2.5 mr-1 rounded-full"></div>
+                                    <h3 class="inline">
+                                        {{ level.label }}
+                                        <span class="text-xs opacity-75">({{ getRegionsByLevel(level).length }})</span>
+                                    </h3>
+                                </div>
+                                <ul class="relative z-0 divide-y divide-gray-200 text-xs">
+                                    <li class="cursor-pointer" v-for="region in getRegionsByLevel(level)" @click="toggleLevel(region)">
+                                        <div class="relative px-6 py-2 flex items-center space-x-3 hover:bg-gray-50">
+                                            <div class="flex-1 min-w-0 pl-5">
+                                                <span class="absolute inset-0"></span>
+                                                <span class="text-gray-900">{{ region.name }}</span>
+                                                <span class="text-gray-500 truncate">{{ region.group }}</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                        <nav class="flex-1 mt-4 min-h-0 overflow-y-auto" v-else>
+                            <div class="relative">
+                                <div class="z-10 sticky top-0 border-t border-b border-gray-200 bg-gray-50 px-6 py-1 text-sm">
+                                    <h3 class="opacity-75 inline">wyniki wyszukiwania</h3>
+                                </div>
+                                <ul class="relative z-0 divide-y divide-gray-200 text-xs">
+                                    <li class="cursor-pointer" v-for="region in searchResults" @click="toggleLevel(region)">
+                                        <div class="relative px-6 py-2 flex items-center space-x-3 hover:bg-gray-50">
+                                            <div class="flex-1 min-w-0 pl-5">
+                                                <span class="absolute inset-0"></span>
+                                                <div :style="getColor(levels[region.level])" class="inline-block flex-shrink-0 w-2.5 h-2.5 mr-1 rounded-full"></div>
+                                                <span class="text-gray-900">{{ region.name }}</span>
+                                                <span class="text-gray-500 truncate">{{ region.group }}</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.7/dist/html2canvas.min.js"></script>
+    <script>
+      let groups = {
+        'B': 'podlaskie',
+        'C': 'kujawsko-pomorskie',
+        'D': 'dolnośląskie',
+        'E': 'łódzkie',
+        'F': 'lubuskie',
+        'G': 'pomorskie',
+        'K': 'małopolskie',
+        'L': 'lubelskie',
+        'N': 'warmińsko-mazurskie',
+        'O': 'opolskie',
+        'P': 'wielkopolskie',
+        'R': 'podkarpackie',
+        'S': 'śląskie',
+        'T': 'świętokrzyskie',
+        'W': 'mazowieckie',
+        'Z': 'zachodniopomorskie',
+      }
+
+      new Vue({
+        el: '#application',
+        data () {
+          return {
+            screenshot: false,
+            options: false,
+            search: '',
+            regions: [],
+            levels: {}
+          }
+        },
+        computed: {
+          computedLevels () {
+            return Object.values(this.levels).reverse()
+          },
+          searchResults () {
+            return this.regions.filter(region => {
+              let query = region.id + ' ' + region.name + ' ' + region.group
+              return query.toLowerCase().includes(this.search.toLowerCase())
+            }).sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+          },
+          cached () {
+            return localStorage.getItem('cached')
+          }
+        },
+        mounted () {
+          let mapCache = {}
+          let levelsCache = {}
+          if (localStorage.getItem('cached')) {
+            mapCache = JSON.parse(localStorage.getItem('cached')).map
+            levelsCache = JSON.parse(localStorage.getItem('cached')).levels
+          }
+
+          this.buildLevels(levelsCache)
+          this.buildRegions(mapCache)
+        },
+        methods: {
+          cacheData () {
+            let map = {}
+            this.regions.map(region => {
+              return { id: region.id, level: region.level }
+            }).filter(region => region.level > 0).forEach(c => {
+              map[c.id] = c.level
+            })
+
+            let cache = {
+              levels: this.levels,
+              map: map,
+            }
+
+            localStorage.setItem('cached', JSON.stringify(cache))
+          },
+          buildLevels (cache) {
+            if (Object.keys(cache).length !== 0) {
+              this.levels = cache
+              return
+            }
+
+            fetch('./levels.json').then(response => response.json()).then(response => {
+              this.levels = response
+            })
+          },
+          buildRegions (cache) {
+            fetch('./map.json').then(response => response.json()).then(response => {
+              for (let region of response.data) {
+                region.level = Object.keys(cache).length !== 0 ? (cache[region.id] ? cache[region.id] : 0) : 0
+                region.group = groups[region.id[0]]
+                this.regions.push(region)
+              }
+            })
+          },
+          getRegionsByLevel (level) {
+            return this.regions.filter(region => region.level === level.level).sort((a, b) => a.name.localeCompare(b.name))
+          },
+          toggleLevel (region) {
+            let index = region.level + 1
+
+            if (this.levels[index]) {
+              region.level++
+            } else {
+              region.level = 0
+            }
+
+            this.cacheData()
+          },
+          getStyle (region) {
+            let level = this.levels[region.level]
+            return 'fill:' + level.color + ';fill-opacity:1'
+          },
+          getColor (level) {
+            return 'background: ' + level.color
+          },
+          resetMap () {
+            localStorage.removeItem('cached')
+            this.fetchData({})
+          },
+          takeScreenshot () {
+            this.screenshot = true
+
+            let svgElements = document.body.querySelectorAll('svg')
+            svgElements.forEach(function (item) {
+              item.setAttribute('width', item.getBoundingClientRect().width)
+              item.setAttribute('height', item.getBoundingClientRect().height)
+              item.style.width = null
+              item.style.height = null
+            })
+
+            html2canvas(document.querySelector('#map')).then(canvas => {
+              document.body.querySelector('#screenshot-placeholder').appendChild(canvas)
+            })
+          },
+          showOptions () {
+            this.options = !this.options
+          }
+        },
+        watch: {
+          levels: {
+            deep: true,
+            handler () {
+              if (this.regions.length) {
+                this.cacheData()
+              }
+            }
+          }
+        }
+      })
+    </script>
+</html>

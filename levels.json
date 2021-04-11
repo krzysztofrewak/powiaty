@@ -1,0 +1,27 @@
+{
+  "0": {
+    "level": 0,
+    "label": "pozostałe",
+    "color": "#d0d3d4"
+  },
+  "1": {
+    "level": 1,
+    "label": "przejechane",
+    "color": "#f1c40f"
+  },
+  "2": {
+    "level": 2,
+    "label": "odwiedzone",
+    "color": "#5dade2"
+  },
+  "3": {
+    "level": 3,
+    "label": "min. 1 nocleg",
+    "color": "#27ae60"
+  },
+  "4": {
+    "level": 4,
+    "label": "miejsce zamieszkania",
+    "color": "#e74c3c"
+  }
+}
