@@ -14,7 +14,7 @@ Prawdopodobnie kilka innych funkcjonalności pojawi się w przyszłości. Zapras
 ![Aplikacja](./screenshot.png)
 
 ### Wygenerowana mapa
-![Wygenerowana mapa](./img.png)
+![Wygenerowana mapa](./map.png)
 
 ## Licencje
 Bazowa mapa Polski z podziałem na powiaty została pożyczona z Wikimedia Commons: [https://commons.wikimedia.org/wiki/File:POLSKA_powiaty.svg](https://commons.wikimedia.org/wiki/File:POLSKA_powiaty.svg) 
