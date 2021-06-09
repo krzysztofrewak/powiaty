@@ -150,6 +150,17 @@
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                                     </svg>
                                 </button>
+                                <button type="button" class="flex-1 inline-flex items-center justify-center px-3 py-1 border shadow-sm text-xs rounded-md focus:outline-none" @click="saveCacheToFile()" title="Zapisz konfigurację">
+                                  <svg class="-ml-1 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                      <path fill-rule="evenodd" d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M17,11l-1.41-1.41L13,12.17V4h-2v8.17L8.41,9.59L7,11l5,5 L17,11z" clip-rule="evenodd"></path>
+                                  </svg>
+                              </button>
+                              <input id="fileUpload" type="file" accept="application/json" @change="restoreCacheFromFile()" hidden>
+                                <button type="button" class="flex-1 inline-flex items-center justify-center px-3 py-1 border shadow-sm text-xs rounded-md focus:outline-none" @click="pickFile()" title="Przywróć konfigurację">
+                                  <svg class="-ml-1 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                      <path fill-rule="evenodd" d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M7,9l1.41,1.41L11,7.83V16h2V7.83l2.59,2.58L17,9l-5-5L7,9z" clip-rule="evenodd"></path>
+                                  </svg>
+                              </button>
                                 <button type="button" class="flex-1 inline-flex items-center justify-center px-3 py-1 border shadow-sm text-xs rounded-md focus:outline-none" @click="showOptions()" title="Zaawansowane">
                                     <svg class="-ml-1 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"></path>
@@ -342,6 +353,32 @@
           },
           showOptions () {
             this.options = !this.options
+          },
+          saveCacheToFile() {
+
+            const cache = localStorage.getItem('cached')
+            const fileName = 'powiaty.json'
+
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(cache));
+            element.setAttribute('download', fileName);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+          },
+          pickFile() {
+            document.getElementById("fileUpload").click()
+          },
+          restoreCacheFromFile() {
+            const fileList = document.getElementById("fileUpload").files;
+            fileList[0].text().then(text => {
+              localStorage.setItem('cached', text)
+              location.reload(); 
+            })
           }
         },
         watch: {
