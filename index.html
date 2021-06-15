@@ -355,29 +355,28 @@
             this.options = !this.options
           },
           saveCacheToFile() {
-
             const cache = localStorage.getItem('cached')
             const fileName = 'powiaty.json'
 
-            const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(cache));
-            element.setAttribute('download', fileName);
+            const element = document.createElement('a')
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(cache))
+            element.setAttribute('download', fileName)
 
-            element.style.display = 'none';
-            document.body.appendChild(element);
+            element.style.display = 'none'
+            document.body.appendChild(element)
 
-            element.click();
+            element.click()
 
-            document.body.removeChild(element);
+            document.body.removeChild(element)
           },
           pickFile() {
-            document.getElementById("fileUpload").click()
+            document.getElementById('fileUpload').click()
           },
           restoreCacheFromFile() {
-            const fileList = document.getElementById("fileUpload").files;
+            const fileList = document.getElementById('fileUpload').files
             fileList[0].text().then(text => {
               localStorage.setItem('cached', text)
-              location.reload(); 
+              location.reload()
             })
           }
         },
